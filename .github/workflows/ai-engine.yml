@@ -1,0 +1,39 @@
+name: AI Engine
+
+on:
+  push:
+    branches: [main]
+    paths: ["ai-engine/**"]
+  pull_request:
+    branches: [main]
+    paths: ["ai-engine/**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-engine
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: ai-engine/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint with ruff
+        run: ruff check src/
+
+      - name: Run tests
+        run: pytest tests/ -v --cov=src --cov-report=xml
+
+      - name: Type check
+        run: mypy src/ --ignore-missing-imports

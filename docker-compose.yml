@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  ai-engine:
+    build: ./ai-engine
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PATH=/app/data/models/ensemble_v1.pt
+      - LOG_LEVEL=info
+    volumes:
+      - ai-models:/app/data/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  ai-models:
