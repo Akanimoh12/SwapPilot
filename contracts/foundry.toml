@@ -17,7 +17,7 @@ runs = 128
 
 [rpc_endpoints]
 unichain = "${UNICHAIN_RPC_URL}"
-unichain_testnet = "${UNICHAIN_TESTNET_RPC_URL}"
-reactive = "https://mainnet-rpc.rnk.dev/"
+unichain_testnet = "https://sepolia.unichain.org"
+reactive = "https://lasna-rpc.rnk.dev/"
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

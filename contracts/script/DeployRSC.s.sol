@@ -18,6 +18,7 @@ contract DeployRSC is Script {
 
         // Deploy ExecutionOracle RSC
         ExecutionOracle oracle = new ExecutionOracle(
+            address(0x0000000000000000000000000000000000fffFfF),
             config.executionConfig,
             config.hookAddress
         );
