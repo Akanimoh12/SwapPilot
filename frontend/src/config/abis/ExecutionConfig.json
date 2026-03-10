@@ -1,0 +1,85 @@
+[
+  {
+    "type": "function",
+    "name": "poolConfigs",
+    "inputs": [{ "name": "poolId", "type": "bytes32" }],
+    "outputs": [
+      { "name": "queueThreshold", "type": "uint256" },
+      { "name": "maxQueueTime", "type": "uint256" },
+      { "name": "maxSlippage", "type": "uint256" },
+      { "name": "isActive", "type": "bool" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getExecutionScore",
+    "inputs": [{ "name": "poolId", "type": "bytes32" }],
+    "outputs": [
+      { "name": "score", "type": "uint256" },
+      { "name": "updatedAt", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isPoolActive",
+    "inputs": [{ "name": "poolId", "type": "bytes32" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "shouldQueue",
+    "inputs": [
+      { "name": "poolId", "type": "bytes32" },
+      { "name": "swapAmount", "type": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "shouldExecute",
+    "inputs": [{ "name": "poolId", "type": "bytes32" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "setPoolConfig",
+    "inputs": [
+      { "name": "poolId", "type": "bytes32" },
+      {
+        "name": "config",
+        "type": "tuple",
+        "components": [
+          { "name": "queueThreshold", "type": "uint256" },
+          { "name": "maxQueueTime", "type": "uint256" },
+          { "name": "maxSlippage", "type": "uint256" },
+          { "name": "isActive", "type": "bool" }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "PoolConfigUpdated",
+    "inputs": [
+      { "name": "poolId", "type": "bytes32", "indexed": true },
+      { "name": "threshold", "type": "uint256", "indexed": false },
+      { "name": "maxQueueTime", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "ExecutionScoreUpdated",
+    "inputs": [
+      { "name": "poolId", "type": "bytes32", "indexed": true },
+      { "name": "score", "type": "uint256", "indexed": false },
+      { "name": "timestamp", "type": "uint256", "indexed": false }
+    ]
+  }
+]
