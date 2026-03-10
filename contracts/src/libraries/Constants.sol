@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-// Shared constants used across SwapPilot
+// Shared constants used across SwapPilot (testnet configuration)
 library Constants {
-    // Chain IDs
-    uint256 internal constant UNICHAIN_CHAIN_ID = 130;
-    uint256 internal constant ETHEREUM_CHAIN_ID = 1;
-    uint256 internal constant ARBITRUM_CHAIN_ID = 42161;
-    uint256 internal constant REACTIVE_CHAIN_ID = 1597;
+    // Chain IDs — testnet
+    uint256 internal constant UNICHAIN_CHAIN_ID = 1301;           // Unichain Sepolia
+    uint256 internal constant ETHEREUM_CHAIN_ID = 11155111;       // Ethereum Sepolia
+    uint256 internal constant ARBITRUM_CHAIN_ID = 421614;         // Arbitrum Sepolia
+    uint256 internal constant REACTIVE_CHAIN_ID = 5318007;        // Reactive Lasna
 
-    // Reactive Network callback proxy on Unichain
+    // Reactive Network callback proxy on Unichain Sepolia
     address internal constant CALLBACK_PROXY_ADDRESS = 0x9299472A6399Fd1027ebF067571Eb3e3D7837FC4;
 
     // Event topic hashes for Swap and Mint

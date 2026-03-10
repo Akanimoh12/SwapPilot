@@ -2,10 +2,9 @@
 pragma solidity ^0.8.26;
 
 import {PoolId} from "@uniswap/v4-core/src/types/PoolId.sol";
-import {IReactive} from "./IReactive.sol";
 
 // Interface for the ExecutionOracle RSC on Reactive Network
-interface IExecutionOracle is IReactive {
+interface IExecutionOracle {
     // Cross-chain market data for a specific chain
     struct ChainData {
         uint256 lastPrice;
