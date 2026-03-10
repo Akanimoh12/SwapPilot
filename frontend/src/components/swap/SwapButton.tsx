@@ -47,10 +47,10 @@ const SWAP_ROUTER_ABI = [
 
 // PoolSwapTest router address — set via env var after deployment
 const SWAP_ROUTER_ADDRESS = (process.env.NEXT_PUBLIC_SWAP_ROUTER_ADDRESS ??
-  "0x0000000000000000000000000000000000000000") as `0x${string}`;
+  "0x552431953dd3F087557196A383c436ddAab665ab") as `0x${string}`;
 
 const HOOK_ADDRESS = (process.env.NEXT_PUBLIC_SWAPPILOT_HOOK_ADDRESS ??
-  "0x0000000000000000000000000000000000000000") as `0x${string}`;
+  "0x4b38424B0F9EB7bA027b9a413B15B6Cc09d020c8") as `0x${string}`;
 
 // MIN/MAX sqrt price limits (from Uniswap v4 constants)
 const MIN_SQRT_PRICE = BigInt("4295128739") + 1n;

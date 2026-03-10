@@ -117,11 +117,14 @@
 
 ## Key Links to Show
 
-- **Explorer:** https://sepolia.uniscan.xyz
-- **Mock USDC:** https://sepolia.uniscan.xyz/address/0xfd2f67cD354545712f9d8230170015d7e30d133A
-- **Mock DAI:** https://sepolia.uniscan.xyz/address/0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737
-- **ExecutionConfig:** https://sepolia.uniscan.xyz/address/0x4F5f7aBa739cB54BEdc6b7a6B9615DAeDc3A26A4
-- **PoolSwapTest:** https://sepolia.uniscan.xyz/address/0x1820b8CebB55821705C5D3348D6e7E4f5E93D028
+- **Unichain Sepolia Explorer:** https://sepolia.uniscan.xyz
+- **Mock USDC:** https://sepolia.uniscan.xyz/address/0x45944B08fea203a7469C82A690F68fabF85B8283
+- **Mock DAI:** https://sepolia.uniscan.xyz/address/0xc993F01C962fd61a588BB00EfB5cc373764c4ADd
+- **ExecutionConfig:** https://sepolia.uniscan.xyz/address/0xcCDB2468De9C89fA6e283B96A0A6714201610F8E
+- **PoolSwapTest:** https://sepolia.uniscan.xyz/address/0x552431953dd3F087557196A383c436ddAab665ab
+- **SwapPilotHook:** https://sepolia.uniscan.xyz/address/0x4b38424B0F9EB7bA027b9a413B15B6Cc09d020c8
+- **Reactive Lasna Explorer:** https://lasna.reactscan.net
+- **ExecutionOracle (RSC):** https://lasna.reactscan.net/address/0xfd2f67cD354545712f9d8230170015d7e30d133A
 
 ## Recording Tips
 

@@ -8,7 +8,7 @@ export const CALLBACK_PROXY = "0x9299472A6399Fd1027ebF067571Eb3e3D7837FC4" as co
 
 export const UNICHAIN_CHAIN_ID = 130;
 export const UNICHAIN_TESTNET_CHAIN_ID = 1301;
-export const REACTIVE_CHAIN_ID = 1597;
+export const REACTIVE_CHAIN_ID = 5318007;
 
 export const AI_ENGINE_URL =
   process.env.NEXT_PUBLIC_AI_ENGINE_URL ?? "http://localhost:8000";
