@@ -9,8 +9,6 @@ import { Spinner } from "@/components/ui/Spinner";
 import { SWAP_ROUTER_ADDRESS, HOOK_ADDRESS } from "@/lib/constants";
 import type { SwapFormData } from "@/lib/types";
 
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as `0x${string}`;
-
 // Uniswap v4 PoolSwapTest ABI
 const SWAP_ROUTER_ABI = [
   {
@@ -85,21 +83,20 @@ export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps
   const { isLoading: isSwapConfirming, isSuccess: isSwapSuccess } =
     useWaitForTransactionReceipt({ hash: swapHash });
 
-  const isNativeIn = formData.tokenIn?.address === ZERO_ADDRESS;
   const amountWei = formData.amountIn && formData.tokenIn
     ? parseUnits(formData.amountIn, formData.tokenIn.decimals)
     : 0n;
 
-  // Check allowance for ERC20 tokens
+  // Check allowance for the input ERC20 token
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: formData.tokenIn?.address as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
     args: account ? [account, SWAP_ROUTER_ADDRESS] : undefined,
-    query: { enabled: !isNativeIn && !!account && !!formData.tokenIn },
+    query: { enabled: !!account && !!formData.tokenIn },
   });
 
-  const needsApproval = !isNativeIn && amountWei > 0n && (allowance ?? 0n) < amountWei;
+  const needsApproval = amountWei > 0n && (allowance ?? 0n) < amountWei;
 
   // Refetch allowance after approval succeeds
   useEffect(() => {
@@ -124,7 +121,7 @@ export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps
   const isLoading = isApprovePending || isApproveConfirming || isSwapPending || isSwapConfirming;
 
   function handleApprove() {
-    if (!formData.tokenIn || isNativeIn) return;
+    if (!formData.tokenIn) return;
     writeApprove({
       address: formData.tokenIn.address,
       abi: erc20Abi,
@@ -168,7 +165,6 @@ export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps
         { takeClaims: false, settleUsingBurn: false },
         "0x",
       ],
-      value: isNativeIn ? amountWei : 0n,
     });
   }
 
