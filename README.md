@@ -1,174 +1,70 @@
+<div align="center">
+
 # SwapPilot
 
-[![Contracts CI](https://github.com/your-username/swappilot/actions/workflows/contracts.yml/badge.svg)](https://github.com/your-username/swappilot/actions/workflows/contracts.yml)
-[![AI Engine CI](https://github.com/your-username/swappilot/actions/workflows/ai-engine.yml/badge.svg)](https://github.com/your-username/swappilot/actions/workflows/ai-engine.yml)
-[![Frontend CI](https://github.com/your-username/swappilot/actions/workflows/frontend.yml/badge.svg)](https://github.com/your-username/swappilot/actions/workflows/frontend.yml)
+**AI-Powered Asynchronous Swap Execution for Uniswap v4**
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Unichain](https://img.shields.io/badge/Chain-Unichain-7B3FE4)](https://unichain.org)
+[![Unichain](https://img.shields.io/badge/Chain-Unichain%20Sepolia-7B3FE4)](https://sepolia.uniscan.xyz)
 [![Reactive Network](https://img.shields.io/badge/Automation-Reactive%20Network-00C2FF)](https://reactive.network)
+[![Solidity](https://img.shields.io/badge/Solidity-^0.8.26-363636)](https://soliditylang.org)
 
-An AI-powered Asynchronous Swap Execution Hook with cross-chain timing intelligence via Reactive Network.
+[Live Demo](https://swappilot.vercel.app) · [Demo Video](https://youtu.be/swappilot-demo) · [Docs](docs/)
 
-> **Submission for:** Atrium Academy UHI8 Hookathon — Individual Track
-> **Theme:** Specialized Markets — Large-Cap Execution
+</div>
+
+---
+
+## What is SwapPilot?
+
+SwapPilot is a **Uniswap v4 Hook** that intercepts large swaps, queues them via the NoOp pattern, and executes at the AI-predicted optimal moment — minimizing slippage, price impact, and MEV exposure.
+
+**Reactive Network RSCs** monitor cross-chain swap activity (Ethereum, Unichain, Arbitrum) in real-time. When the AI model detects optimal conditions, the RSC triggers a callback to execute the queued swap autonomously.
+
+> **Built for:** Atrium Academy UHI8 Hookathon — Specialized Markets Track  
 > **Sponsor Integration:** Reactive Network
 
 ---
 
-## Overview
-
-SwapPilot is a **Uniswap v4 Hook** that intercepts large swaps, queues them via a NoOp, and uses AI to predict the optimal block and moment to execute — minimizing price impact, slippage, and MEV exposure.
-
-Instead of executing large trades instantly (suffering massive slippage), SwapPilot holds the swap and waits for the AI model to identify the best execution window based on cross-chain liquidity depth, trading patterns, and volatility. **Reactive Network** RSCs monitor swap activity across Unichain, Ethereum, and Arbitrum in real-time. When the AI determines optimal conditions, the RSC triggers a callback to execute the queued swap — fully autonomous.
-
-## Key Results
-
-| Metric | Instant Execution | SwapPilot | Improvement |
-|---|---|---|---|
-| Avg Slippage | 182 bps | 54 bps | **-70%** |
-| MEV Extracted | $12.4K/month | $0.8K/month | **-94%** |
-| Fill Rate | 100% | 100% | Same |
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- [Foundry](https://book.getfoundry.sh/) (stable)
-- [Node.js](https://nodejs.org/) 20+
-- [Python](https://www.python.org/) 3.11+
-
-### Installation
-
-```bash
-git clone https://github.com/your-username/swappilot.git
-cd swappilot
-make install
-```
-
-### Running Locally
-
-```bash
-# Terminal 1: Start AI engine
-make ai-serve
-
-# Terminal 2: Start frontend
-make frontend-dev
-
-# Open http://localhost:3000
-```
-
-### Testing
-
-```bash
-# Run all tests
-make test-all
-
-# Individual workspaces
-make test            # Solidity (forge test)
-make ai-test         # Python (pytest)
-make frontend-test   # Frontend (jest)
-```
-
----
-
-## Architecture
-
-```
-┌────────────────────────────────────────────────────────┐
-│  UNICHAIN (Chain ID: 130)                              │
-│                                                        │
-│  Trader → PoolManager → SwapPilotHook                  │
-│           │              ├─ beforeSwap (NoOp + Queue)  │
-│           │              ├─ executeQueuedSwap (RSC CB) │
-│           │              └─ expireOrder (Fallback)     │
-│           │                                            │
-│           └─ ExecutionConfig (AI scores + pool config) │
-└────────────────────────────────────────────────────────┘
-        ▲                           │
-        │ Callback                  │ Events
-        │                           ▼
-┌───────┴────────────────────────────────────────────────┐
-│  REACTIVE NETWORK (Chain ID: 1597)                     │
-│                                                        │
-│  ExecutionOracle RSC                                   │
-│  ├─ Subscribes: Unichain + Ethereum + Arbitrum events  │
-│  ├─ Computes cross-chain execution score               │
-│  └─ Emits Callback when score > threshold              │
-└────────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌────────────────────────────────────────────────────────┐
-│  AI ENGINE (Python / FastAPI)                          │
-│  ├─ Transformer Encoder (70% weight)                   │
-│  ├─ Random Forest (30% weight)                         │
-│  └─ Execution Score: 0–100                             │
-└────────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌────────────────────────────────────────────────────────┐
-│  FRONTEND (Next.js + wagmi)                            │
-│  ├─ Swap interface with queue warnings                 │
-│  ├─ Order queue dashboard                              │
-│  └─ AI score gauge + analytics                         │
-└────────────────────────────────────────────────────────┘
-```
-
 ## How It Works
 
-1. **Submit** — Trader submits a large swap on Uniswap v4
-2. **Queue** — SwapPilotHook NoOps the swap, queues the order, holds tokens safely
-3. **Monitor** — RSC monitors swap/liquidity events across 3 chains
+```
+Trader → Uniswap v4 Pool → SwapPilotHook (NoOp + Queue)
+                                    ↓
+                           ExecutionConfig (AI Scores)
+                                    ↑
+                      Reactive Network RSC (Cross-chain Monitor)
+                                    ↑
+                           AI Engine (Transformer + RF Ensemble)
+```
+
+1. **Submit** — Trader sends a large swap through the Uniswap v4 pool
+2. **Queue** — Hook NoOps the AMM swap, queues the order, holds tokens via ERC-6909 claims
+3. **Monitor** — RSC subscribes to swap events across 3 chains
 4. **Score** — AI engine scores execution conditions (0–100)
-5. **Execute** — When score ≥ 70, RSC triggers callback → swap executes at optimal moment
-6. **Fallback** — After 30 minutes, anyone can expire the order (tokens returned)
+5. **Execute** — Score ≥ 70 triggers callback → swap executes at optimal moment
+6. **Fallback** — Orders auto-expire after 5 minutes (tokens refunded)
 
 ---
 
-## Project Structure
+## Deployed Contracts
 
-```
-swappilot/
-├── contracts/          # Foundry — Solidity smart contracts
-│   ├── src/hook/       # SwapPilotHook (Uniswap v4 Hook)
-│   ├── src/oracle/     # ExecutionConfig
-│   ├── src/rsc/        # ExecutionOracle (Reactive Network RSC)
-│   ├── src/libraries/  # OrderLib, VolatilityLib, Constants
-│   ├── test/           # Unit + integration tests (75 tests)
-│   └── script/         # Deployment scripts
-├── ai-engine/          # Python — AI execution predictor
-│   ├── src/models/     # Transformer + RF + Ensemble
-│   ├── src/features/   # Feature extraction
-│   ├── src/server/     # FastAPI inference server
-│   └── tests/          # Python tests (34 tests)
-├── frontend/           # Next.js — Web interface
-│   ├── src/app/        # Pages (swap, queue, analytics)
-│   ├── src/components/ # React components
-│   ├── src/hooks/      # Custom wagmi hooks
-│   └── __tests__/      # Frontend tests (44 tests)
-├── docs/               # Documentation
-├── scripts/            # Integration scripts
-└── .github/workflows/  # CI/CD
-```
+### Unichain Sepolia (Chain ID: 1301)
 
-## Deployment
+| Contract | Address | Explorer |
+|---|---|---|
+| PoolManager | `0x7c13D90950F542B297179e09f3A36EaA917A40C1` | [View](https://sepolia.uniscan.xyz/address/0x7c13D90950F542B297179e09f3A36EaA917A40C1) |
+| **SwapPilotHook** | `0xCB611482dC1112f768B965d655d83b1DbcF420c8` | [View](https://sepolia.uniscan.xyz/address/0xCB611482dC1112f768B965d655d83b1DbcF420c8) |
+| ExecutionConfig | `0xe8cf0aCE4A7f5b940c3Cab327117045C03b79Ac3` | [View](https://sepolia.uniscan.xyz/address/0xe8cf0aCE4A7f5b940c3Cab327117045C03b79Ac3) |
+| PoolSwapTest | `0xd48ee69b1206c3fdD17E5668A2725E10c2B0f11D` | [View](https://sepolia.uniscan.xyz/address/0xd48ee69b1206c3fdD17E5668A2725E10c2B0f11D) |
+| Mock USDC | `0x20E8307cFe2C5CF7E434b5Cb2C92494fa4BAF01C` | [View](https://sepolia.uniscan.xyz/address/0x20E8307cFe2C5CF7E434b5Cb2C92494fa4BAF01C) |
+| Mock DAI | `0x7d1dea64e891dccb20f85bC379227238c8C1308b` | [View](https://sepolia.uniscan.xyz/address/0x7d1dea64e891dccb20f85bC379227238c8C1308b) |
 
-See the full [Deployment Guide](docs/deployment-guide.md).
+### Reactive Lasna Testnet (Chain ID: 5318007)
 
-```bash
-# Deploy contracts to Unichain
-make deploy-unichain
-
-# Deploy RSC to Reactive Network
-make deploy-rsc
-
-# Sync ABIs to frontend
-make sync-abis
-
-# Build frontend
-make frontend-build
-```
+| Contract | Address | Explorer |
+|---|---|---|
+| ExecutionOracle RSC | `0xfd2f67cD354545712f9d8230170015d7e30d133A` | [View](https://lasna.reactscan.net/address/0xfd2f67cD354545712f9d8230170015d7e30d133A) |
 
 ---
 
@@ -176,23 +72,87 @@ make frontend-build
 
 | Layer | Technology |
 |---|---|
-| Chain | Unichain (L2, Chain ID 130) |
-| AMM | Uniswap v4 (PoolManager + NoOp Hook) |
-| Automation | Reactive Network (RSC, Chain ID 1597) |
-| Contracts | Solidity ^0.8.26 / Foundry |
-| AI Model | PyTorch Transformer + scikit-learn RF |
-| AI Server | FastAPI + uvicorn |
-| Frontend | Next.js 16 + TypeScript + Tailwind CSS v4 |
-| Web3 | wagmi + viem + RainbowKit |
-| Testing | Foundry (75) + pytest (34) + Jest (44) |
+| Hook | Uniswap v4 (NoOp + BeforeSwapReturnDelta) |
+| Chain | Unichain Sepolia (L2) |
+| Automation | Reactive Network RSC |
+| Contracts | Solidity ^0.8.26 · Foundry |
+| AI Model | PyTorch Transformer + scikit-learn Random Forest |
+| API | FastAPI + uvicorn |
+| Frontend | Next.js 16 · TypeScript · Tailwind CSS v4 |
+| Web3 | wagmi v3 · viem · RainbowKit |
 
-## Documentation
+---
 
-- [Architecture](docs/architecture.md)
-- [Deployment Guide](docs/deployment-guide.md)
-- [Reactive Integration](docs/reactive-integration.md)
-- [AI Model Spec](docs/ai-model-spec.md)
-- [API Reference](docs/api-reference.md)
+## Quick Start
+
+### Prerequisites
+
+- [Foundry](https://book.getfoundry.sh/) · [Node.js 20+](https://nodejs.org/) · [Python 3.11+](https://python.org/)
+
+### Install & Run
+
+```bash
+git clone https://github.com/AkanniData/SwapPilot.git
+cd SwapPilot
+
+# Contracts
+cd contracts && forge install && forge build && forge test
+
+# AI Engine
+cd ../ai-engine && python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && uvicorn src.server.main:app --port 8000
+
+# Frontend
+cd ../frontend && npm install && npm run dev
+# Open http://localhost:3000
+```
+
+### Testing
+
+```bash
+cd contracts && forge test          # 75 Solidity tests
+cd ai-engine && pytest              # 34 Python tests
+cd frontend && npm test             # 44 Jest tests
+```
+
+---
+
+## Project Structure
+
+```
+SwapPilot/
+├── contracts/                 # Foundry workspace
+│   ├── src/hook/              # SwapPilotHook (Uniswap v4 Hook)
+│   ├── src/oracle/            # ExecutionConfig (AI scores + pool config)
+│   ├── src/rsc/               # ExecutionOracle (Reactive Network RSC)
+│   ├── src/libraries/         # OrderLib, VolatilityLib, Constants
+│   ├── script/                # Deployment & initialization scripts
+│   └── test/                  # Unit + integration tests
+├── ai-engine/                 # Python AI predictor
+│   ├── src/models/            # Transformer + RF + Ensemble
+│   ├── src/features/          # Feature extraction pipeline
+│   └── src/server/            # FastAPI inference server
+├── frontend/                  # Next.js web app
+│   ├── src/app/               # Pages (swap, queue, analytics, history)
+│   ├── src/components/        # React components
+│   └── src/hooks/             # Custom wagmi hooks
+└── docs/                      # Architecture & deployment docs
+```
+
+---
+
+## Key Features
+
+- **NoOp Pattern** — Large swaps are intercepted and queued instead of executing immediately
+- **AI Execution Scoring** — Transformer + Random Forest ensemble predicts optimal execution windows
+- **Cross-Chain Intelligence** — RSC monitors Ethereum, Unichain, and Arbitrum swap events in real-time
+- **MEV Protection** — Queued orders avoid sandwich attacks and front-running
+- **ERC-6909 Claims** — Tokens held safely in PoolManager during queue period
+- **Auto-Expiry** — Orders that exceed the queue window are automatically refundable
+- **Token Faucet** — Built-in testnet faucet for mUSDC and mDAI
+- **Live Analytics** — Real-time AI score gauge, volatility feed, and execution history
+
+---
 
 ## License
 
@@ -200,4 +160,6 @@ make frontend-build
 
 ---
 
-Built for the Atrium Academy UHI8 Hookathon — Uniswap v4 Async Execution Hook + Reactive Network + AI
+<div align="center">
+Built for the <strong>Atrium Academy UHI8 Hookathon</strong> — Uniswap v4 × Reactive Network
+</div>

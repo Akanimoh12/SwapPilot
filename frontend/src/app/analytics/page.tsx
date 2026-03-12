@@ -5,9 +5,7 @@ import { SlippageChart } from "@/components/analytics/SlippageChart";
 import { VolatilityFeed } from "@/components/analytics/VolatilityFeed";
 import { ExecutionHistory } from "@/components/analytics/ExecutionHistory";
 import { useAIScore } from "@/hooks/useAIScore";
-
-const DEFAULT_POOL_ID =
-  "0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`;
+import { DEFAULT_POOL_ID } from "@/lib/constants";
 
 export default function AnalyticsPage() {
   const { score } = useAIScore(DEFAULT_POOL_ID);

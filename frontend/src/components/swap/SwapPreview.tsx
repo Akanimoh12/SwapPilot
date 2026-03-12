@@ -3,6 +3,9 @@
 import { ChevronDown, ChevronUp, Clock, Zap } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { DEFAULT_POOL_ID } from "@/lib/constants";
+import { useExecutionConfig } from "@/hooks/useExecutionConfig";
+import { useAIScore } from "@/hooks/useAIScore";
 import type { SwapFormData } from "@/lib/types";
 
 interface SwapPreviewProps {
@@ -12,6 +15,8 @@ interface SwapPreviewProps {
 
 export function SwapPreview({ formData, willBeQueued }: SwapPreviewProps) {
   const [expanded, setExpanded] = useState(false);
+  const { maxQueueTime, maxSlippage, isActive } = useExecutionConfig(DEFAULT_POOL_ID);
+  const { score, action } = useAIScore(DEFAULT_POOL_ID);
 
   return (
     <div className="rounded-2xl border border-border bg-background">
@@ -44,9 +49,11 @@ export function SwapPreview({ formData, willBeQueued }: SwapPreviewProps) {
                 <Zap size={12} />
                 <span className="font-medium">AI-Queued Execution</span>
               </div>
-              <Row label="Est. Wait Time" value="1–5 min" icon={<Clock size={12} />} />
+              <Row label="Est. Wait Time" value={`≤ ${Math.floor(maxQueueTime / 60)} min`} icon={<Clock size={12} />} />
+              <Row label="Max Slippage" value={`${(maxSlippage / 100).toFixed(1)}%`} />
+              <Row label="AI Score" value={`${score} — ${action}`} className={action === "execute" ? "text-success" : "text-warning"} />
               <Row label="Execution Trigger" value="AI Score ≥ 70" />
-              <Row label="Fallback" value="Auto-refund after 5 min" />
+              <Row label="Fallback" value={`Auto-refund after ${Math.floor(maxQueueTime / 60)} min`} />
             </>
           )}
         </div>

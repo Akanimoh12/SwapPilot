@@ -1,8 +1,5 @@
 import { OrderQueue } from "@/components/queue/OrderQueue";
-
-// Default pool ID — will be replaced with a pool selector in production
-const DEFAULT_POOL_ID =
-  "0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`;
+import { DEFAULT_POOL_ID } from "@/lib/constants";
 
 export default function QueuePage() {
   return (

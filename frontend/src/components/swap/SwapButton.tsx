@@ -1,14 +1,17 @@
 "use client";
 
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits } from "viem";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
+import { parseUnits, erc20Abi } from "viem";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/Spinner";
+import { SWAP_ROUTER_ADDRESS, HOOK_ADDRESS } from "@/lib/constants";
 import type { SwapFormData } from "@/lib/types";
 
-// Uniswap v4 UniversalRouter / PoolSwapTest ABI for swap
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as `0x${string}`;
+
+// Uniswap v4 PoolSwapTest ABI
 const SWAP_ROUTER_ABI = [
   {
     type: "function",
@@ -34,23 +37,20 @@ const SWAP_ROUTER_ABI = [
           { name: "sqrtPriceLimitX96", type: "uint160" },
         ],
       },
-      { name: "testSettings", type: "tuple", components: [
-        { name: "takeClaims", type: "bool" },
-        { name: "settleUsingBurn", type: "bool" },
-      ]},
+      {
+        name: "testSettings",
+        type: "tuple",
+        components: [
+          { name: "takeClaims", type: "bool" },
+          { name: "settleUsingBurn", type: "bool" },
+        ],
+      },
       { name: "hookData", type: "bytes" },
     ],
     outputs: [{ name: "delta", type: "int256" }],
     stateMutability: "payable",
   },
 ] as const;
-
-// PoolSwapTest router address — set via env var after deployment
-const SWAP_ROUTER_ADDRESS = (process.env.NEXT_PUBLIC_SWAP_ROUTER_ADDRESS ??
-  "0x552431953dd3F087557196A383c436ddAab665ab") as `0x${string}`;
-
-const HOOK_ADDRESS = (process.env.NEXT_PUBLIC_SWAPPILOT_HOOK_ADDRESS ??
-  "0x4b38424B0F9EB7bA027b9a413B15B6Cc09d020c8") as `0x${string}`;
 
 // MIN/MAX sqrt price limits (from Uniswap v4 constants)
 const MIN_SQRT_PRICE = BigInt("4295128739") + 1n;
@@ -63,25 +63,78 @@ interface SwapButtonProps {
 }
 
 export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps) {
-  const { isConnected } = useAccount();
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isConnected, address: account } = useAccount();
+
+  // Approval state
+  const {
+    writeContract: writeApprove,
+    data: approveHash,
+    isPending: isApprovePending,
+    error: approveError,
+  } = useWriteContract();
+  const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } =
+    useWaitForTransactionReceipt({ hash: approveHash });
+
+  // Swap state
+  const {
+    writeContract: writeSwap,
+    data: swapHash,
+    isPending: isSwapPending,
+    error: swapError,
+  } = useWriteContract();
+  const { isLoading: isSwapConfirming, isSuccess: isSwapSuccess } =
+    useWaitForTransactionReceipt({ hash: swapHash });
+
+  const isNativeIn = formData.tokenIn?.address === ZERO_ADDRESS;
+  const amountWei = formData.amountIn && formData.tokenIn
+    ? parseUnits(formData.amountIn, formData.tokenIn.decimals)
+    : 0n;
+
+  // Check allowance for ERC20 tokens
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
+    address: formData.tokenIn?.address as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: account ? [account, SWAP_ROUTER_ADDRESS] : undefined,
+    query: { enabled: !isNativeIn && !!account && !!formData.tokenIn },
+  });
+
+  const needsApproval = !isNativeIn && amountWei > 0n && (allowance ?? 0n) < amountWei;
+
+  // Refetch allowance after approval succeeds
+  useEffect(() => {
+    if (isApproveSuccess) {
+      refetchAllowance();
+      toast.success("Token approved!");
+    }
+    if (approveError) {
+      toast.error(`Approval failed: ${approveError.message.slice(0, 80)}`);
+    }
+  }, [isApproveSuccess, approveError, refetchAllowance]);
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSwapSuccess) {
       toast.success(willBeQueued ? "Order queued for smart execution!" : "Swap executed!");
     }
-    if (error) {
-      toast.error(error.message.slice(0, 80));
+    if (swapError) {
+      toast.error(`Swap failed: ${swapError.message.slice(0, 80)}`);
     }
-  }, [isSuccess, error, willBeQueued]);
+  }, [isSwapSuccess, swapError, willBeQueued]);
 
-  const isLoading = isPending || isConfirming;
+  const isLoading = isApprovePending || isApproveConfirming || isSwapPending || isSwapConfirming;
+
+  function handleApprove() {
+    if (!formData.tokenIn || isNativeIn) return;
+    writeApprove({
+      address: formData.tokenIn.address,
+      abi: erc20Abi,
+      functionName: "approve",
+      args: [SWAP_ROUTER_ADDRESS, amountWei * 10n], // approve 10x for convenience
+    });
+  }
 
   function handleSwap() {
     if (!formData.tokenIn || !formData.tokenOut || !formData.amountIn) return;
-
-    const amountWei = parseUnits(formData.amountIn, formData.tokenIn.decimals);
 
     // Sort tokens to determine zeroForOne
     const addr0 = formData.tokenIn.address.toLowerCase();
@@ -95,7 +148,7 @@ export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps
 
     const sqrtPriceLimitX96 = zeroForOne ? MIN_SQRT_PRICE : MAX_SQRT_PRICE;
 
-    writeContract({
+    writeSwap({
       address: SWAP_ROUTER_ADDRESS,
       abi: SWAP_ROUTER_ABI,
       functionName: "swap",
@@ -103,7 +156,7 @@ export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps
         {
           currency0: currency0 as `0x${string}`,
           currency1: currency1 as `0x${string}`,
-          fee: 3000, // 0.3% fee tier
+          fee: 3000,
           tickSpacing: 60,
           hooks: HOOK_ADDRESS,
         },
@@ -115,26 +168,35 @@ export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps
         { takeClaims: false, settleUsingBurn: false },
         "0x",
       ],
-      value: formData.tokenIn.address === "0x0000000000000000000000000000000000000000"
-        ? amountWei
-        : 0n,
+      value: isNativeIn ? amountWei : 0n,
     });
   }
 
-  // Determine button label
+  // Determine button label and action
   let label = "Swap";
-  if (!isConnected) label = "Connect Wallet";
-  else if (isLoading) label = "Confirming...";
-  else if (willBeQueued) label = "Queue for Smart Execution";
+  let onClick = handleSwap;
+
+  if (!isConnected) {
+    label = "Connect Wallet";
+  } else if (isApprovePending || isApproveConfirming) {
+    label = "Approving...";
+  } else if (isSwapPending || isSwapConfirming) {
+    label = "Confirming Swap...";
+  } else if (needsApproval) {
+    label = `Approve ${formData.tokenIn?.symbol}`;
+    onClick = handleApprove;
+  } else if (willBeQueued) {
+    label = "Queue for Smart Execution";
+  }
 
   return (
     <button
-      onClick={handleSwap}
+      onClick={onClick}
       disabled={disabled || isLoading || !isConnected}
       className={cn(
         "flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold transition-all",
-        willBeQueued
-          ? "bg-accent text-white glow-pink hover:bg-accent-light"
+        needsApproval
+          ? "bg-yellow-600 text-white hover:bg-yellow-500"
           : "bg-accent text-white glow-pink hover:bg-accent-light",
         (disabled || !isConnected) && "cursor-not-allowed opacity-50 shadow-none",
       )}

@@ -13,7 +13,7 @@ export const TOKENS: TokenInfo[] = [
   },
   {
     address: (process.env.NEXT_PUBLIC_TOKEN_USDC ??
-      "0x45944B08fea203a7469C82A690F68fabF85B8283") as `0x${string}`,
+      "0x20E8307cFe2C5CF7E434b5Cb2C92494fa4BAF01C") as `0x${string}`,
     symbol: "USDC",
     name: "USD Coin",
     decimals: 6,
@@ -29,7 +29,7 @@ export const TOKENS: TokenInfo[] = [
   },
   {
     address: (process.env.NEXT_PUBLIC_TOKEN_DAI ??
-      "0xc993F01C962fd61a588BB00EfB5cc373764c4ADd") as `0x${string}`,
+      "0x7d1dea64e891dccb20f85bC379227238c8C1308b") as `0x${string}`,
     symbol: "DAI",
     name: "Dai Stablecoin",
     decimals: 18,

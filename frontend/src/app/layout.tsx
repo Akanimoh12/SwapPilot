@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { Web3Provider } from "@/providers/Web3Provider";
@@ -7,11 +6,6 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "sonner";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "SwapPilot — AI-Powered Swap Execution",
@@ -26,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>
+      <body className="font-sans antialiased">
         <ThemeProvider>
           <Web3Provider>
             <div className="flex min-h-screen flex-col">

@@ -1,4 +1,5 @@
 import { SwapForm } from "@/components/swap/SwapForm";
+import { FaucetButton } from "@/components/swap/FaucetButton";
 
 export default function SwapPage() {
   return (
@@ -8,6 +9,9 @@ export default function SwapPage() {
         Large swaps are automatically queued for AI-optimized execution.
       </p>
       <SwapForm />
+      <div className="mt-4">
+        <FaucetButton />
+      </div>
     </div>
   );
 }

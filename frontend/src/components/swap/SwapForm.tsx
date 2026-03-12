@@ -11,9 +11,10 @@ import type { TokenInfo, SwapFormData } from "@/lib/types";
 import { TokenSelector } from "./TokenSelector";
 import { SwapPreview } from "./SwapPreview";
 import { SwapButton } from "./SwapButton";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
 
 export function SwapForm() {
-  const { isConnected } = useAccount();
+  const { isConnected, address: account } = useAccount();
 
   const [formData, setFormData] = useState<SwapFormData>({
     tokenIn: TOKENS[0],
@@ -34,6 +35,17 @@ export function SwapForm() {
       : 0n;
 
   const willBeQueued = amountWei >= LARGE_SWAP_THRESHOLD;
+
+  const balanceIn = useTokenBalance(
+    (formData.tokenIn?.address ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
+    account,
+    formData.tokenIn?.decimals,
+  );
+  const balanceOut = useTokenBalance(
+    (formData.tokenOut?.address ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
+    account,
+    formData.tokenOut?.decimals,
+  );
 
   function handleTokenSelect(token: TokenInfo) {
     if (showTokenSelector === "in") {
@@ -65,7 +77,14 @@ export function SwapForm() {
     <div className="w-full max-w-md space-y-3">
       {/* Token In */}
       <div className="rounded-2xl border border-border bg-card p-4 transition-colors focus-within:border-accent/30">
-        <label className="text-xs font-medium text-muted">You pay</label>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-medium text-muted">You pay</label>
+          {isConnected && formData.tokenIn && (
+            <span className="text-xs text-muted">
+              Balance: {balanceIn.formatted} {formData.tokenIn.symbol}
+            </span>
+          )}
+        </div>
         <div className="mt-2 flex items-center gap-2">
           <input
             type="text"
@@ -99,7 +118,14 @@ export function SwapForm() {
 
       {/* Token Out */}
       <div className="rounded-2xl border border-border bg-card p-4 transition-colors focus-within:border-accent/30">
-        <label className="text-xs font-medium text-muted">You receive</label>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-medium text-muted">You receive</label>
+          {isConnected && formData.tokenOut && (
+            <span className="text-xs text-muted">
+              Balance: {balanceOut.formatted} {formData.tokenOut.symbol}
+            </span>
+          )}
+        </div>
         <div className="mt-2 flex items-center gap-2">
           <input
             type="text"
