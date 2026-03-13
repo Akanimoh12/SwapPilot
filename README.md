@@ -9,7 +9,7 @@
 [![Reactive Network](https://img.shields.io/badge/Automation-Reactive%20Network-00C2FF)](https://reactive.network)
 [![Solidity](https://img.shields.io/badge/Solidity-^0.8.26-363636)](https://soliditylang.org)
 
-[Live Demo](https://swappilot.vercel.app) · [Demo Video](https://youtu.be/swappilot-demo) · [Docs](docs/)
+[Live Demo](https://swappilot.vercel.app) · [Demo Video](https://www.loom.com/share/993170c53a3f42bb81ca0d60d60153b8) · [Docs](docs/)
 
 </div>
 
@@ -64,7 +64,7 @@ Trader → Uniswap v4 Pool → SwapPilotHook (NoOp + Queue)
 
 | Contract | Address | Explorer |
 |---|---|---|
-| ExecutionOracle RSC | `0xfd2f67cD354545712f9d8230170015d7e30d133A` | [View](https://lasna.reactscan.net/address/0xfd2f67cD354545712f9d8230170015d7e30d133A) |
+| ExecutionOracle RSC | `0xfd2f67cD354545712f9d8230170015d7e30d133A` | [View](https://lasna.reactscan.net/address/0x9bcf302cfcb64406b557342c2715e85ac62a4693/contract/0xfd2f67cd354545712f9d8230170015d7e30d133a?screen=transactions) |
 
 ---
 
