@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useAccount } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { ArrowDownUp, AlertTriangle } from "lucide-react";
@@ -98,6 +98,11 @@ export function SwapForm() {
     }));
   }
 
+  const refetchInRef = useRef(balanceIn.refetch);
+  refetchInRef.current = balanceIn.refetch;
+  const refetchOutRef = useRef(balanceOut.refetch);
+  refetchOutRef.current = balanceOut.refetch;
+
   const handleSwapSuccess = useCallback((txHash: `0x${string}`) => {
     setSuccessModal({
       open: true,
@@ -108,9 +113,9 @@ export function SwapForm() {
     // Clear the input
     setFormData((prev) => ({ ...prev, amountIn: "" }));
     // Refresh balances
-    balanceIn.refetch();
-    balanceOut.refetch();
-  }, [formData.amountIn, estimatedOutput, balanceIn, balanceOut]);
+    refetchInRef.current();
+    refetchOutRef.current();
+  }, [formData.amountIn, estimatedOutput]);
 
   return (
     <div className="w-full max-w-md space-y-3">

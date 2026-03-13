@@ -3,7 +3,7 @@
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
 import { parseUnits, erc20Abi } from "viem";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/Spinner";
 import { SWAP_ROUTER_ADDRESS, HOOK_ADDRESS } from "@/lib/constants";
@@ -63,6 +63,7 @@ interface SwapButtonProps {
 
 export function SwapButton({ formData, willBeQueued, disabled, onSwapSuccess }: SwapButtonProps) {
   const { isConnected, address: account } = useAccount();
+  const handledHashRef = useRef<string | null>(null);
 
   // Approval state
   const {
@@ -111,13 +112,14 @@ export function SwapButton({ formData, willBeQueued, disabled, onSwapSuccess }: 
   }, [isApproveSuccess, approveError, refetchAllowance]);
 
   useEffect(() => {
-    if (isSwapSuccess && swapHash) {
+    if (isSwapSuccess && swapHash && swapHash !== handledHashRef.current) {
+      handledHashRef.current = swapHash;
       onSwapSuccess?.(swapHash);
     }
     if (swapError) {
       toast.error(`Swap failed: ${swapError.message.slice(0, 80)}`);
     }
-  }, [isSwapSuccess, swapError, willBeQueued, swapHash, onSwapSuccess]);
+  }, [isSwapSuccess, swapError, swapHash, onSwapSuccess]);
 
   const isLoading = isApprovePending || isApproveConfirming || isSwapPending || isSwapConfirming;
 

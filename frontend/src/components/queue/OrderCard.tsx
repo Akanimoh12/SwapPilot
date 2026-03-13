@@ -1,12 +1,14 @@
 "use client";
 
 import { useOrder } from "@/hooks/useSwapPilot";
-import { shortenAddress, timeAgo, formatEther } from "@/lib/utils";
+import { shortenAddress, timeAgo } from "@/lib/utils";
+import { formatUnits } from "viem";
 import { cn } from "@/lib/utils";
 import { OrderStatusBadge, type DisplayStatus } from "./OrderStatus";
 import { ExpireButton } from "./ExpireButton";
 import { MAX_QUEUE_TIME } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { TOKENS } from "@/config/tokens";
 
 // OrderStatus enum: 0=Queued, 1=Executed, 2=Expired, 3=Cancelled
 const STATUS_MAP: Record<number, DisplayStatus> = {
@@ -60,6 +62,14 @@ export function OrderCard({ orderIndex, poolId }: OrderCardProps) {
     expired: "border-danger/40",
   };
 
+  // Determine the sell token from the pool key
+  const sellAddress = order.zeroForOne
+    ? order.poolKey.currency0.toLowerCase()
+    : order.poolKey.currency1.toLowerCase();
+  const sellToken = TOKENS.find((t) => t.address.toLowerCase() === sellAddress);
+  const sellSymbol = sellToken?.symbol ?? "???";
+  const sellDecimals = sellToken?.decimals ?? 18;
+
   return (
     <div
       className={cn(
@@ -74,7 +84,7 @@ export function OrderCard({ orderIndex, poolId }: OrderCardProps) {
             <OrderStatusBadge status={status} />
           </div>
           <p className="text-xs text-muted">
-            {shortenAddress(order.trader)} · {order.zeroForOne ? "Sell" : "Buy"} · {formatEther(order.amountQueued)} ETH
+            {shortenAddress(order.trader)} · {order.zeroForOne ? "Sell" : "Buy"} · {formatUnits(order.amountQueued, sellDecimals)} {sellSymbol}
           </p>
           <p className="text-xs text-muted">Queued {timeAgo(queuedAtNum)}</p>
           {status === "queued" && !isExpired && (
