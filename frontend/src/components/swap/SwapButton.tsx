@@ -58,9 +58,10 @@ interface SwapButtonProps {
   formData: SwapFormData;
   willBeQueued: boolean;
   disabled: boolean;
+  onSwapSuccess?: (txHash: `0x${string}`) => void;
 }
 
-export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps) {
+export function SwapButton({ formData, willBeQueued, disabled, onSwapSuccess }: SwapButtonProps) {
   const { isConnected, address: account } = useAccount();
 
   // Approval state
@@ -110,13 +111,13 @@ export function SwapButton({ formData, willBeQueued, disabled }: SwapButtonProps
   }, [isApproveSuccess, approveError, refetchAllowance]);
 
   useEffect(() => {
-    if (isSwapSuccess) {
-      toast.success(willBeQueued ? "Order queued for smart execution!" : "Swap executed!");
+    if (isSwapSuccess && swapHash) {
+      onSwapSuccess?.(swapHash);
     }
     if (swapError) {
       toast.error(`Swap failed: ${swapError.message.slice(0, 80)}`);
     }
-  }, [isSwapSuccess, swapError, willBeQueued]);
+  }, [isSwapSuccess, swapError, willBeQueued, swapHash, onSwapSuccess]);
 
   const isLoading = isApprovePending || isApproveConfirming || isSwapPending || isSwapConfirming;
 

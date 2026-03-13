@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useAccount } from "wagmi";
-import { parseUnits } from "viem";
+import { parseUnits, formatUnits } from "viem";
 import { ArrowDownUp, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TOKENS } from "@/config/tokens";
@@ -11,7 +11,11 @@ import type { TokenInfo, SwapFormData } from "@/lib/types";
 import { TokenSelector } from "./TokenSelector";
 import { SwapPreview } from "./SwapPreview";
 import { SwapButton } from "./SwapButton";
+import { SwapSuccessModal } from "./SwapSuccessModal";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
+
+// Pool fee is 3000 bps = 0.3%
+const POOL_FEE_FRACTION = 0.003;
 
 export function SwapForm() {
   const { isConnected, address: account } = useAccount();
@@ -25,6 +29,12 @@ export function SwapForm() {
 
   const [showTokenSelector, setShowTokenSelector] = useState<"in" | "out" | null>(null);
   const [slippageOpen, setSlippageOpen] = useState(false);
+  const [successModal, setSuccessModal] = useState<{
+    open: boolean;
+    txHash?: `0x${string}`;
+    amountIn?: string;
+    estimatedOut?: string;
+  }>({ open: false });
 
   const SLIPPAGE_OPTIONS = [10, 50, 100]; // 0.1%, 0.5%, 1%
 
@@ -35,6 +45,21 @@ export function SwapForm() {
       : 0n;
 
   const willBeQueued = amountWei >= LARGE_SWAP_THRESHOLD;
+
+  // Estimate output: for the mUSDC/mDAI 1:1 pool, output ≈ input × (1 - fee)
+  // adjusted for decimal differences between tokens
+  const estimatedOutput = useMemo(() => {
+    if (!formData.amountIn || Number(formData.amountIn) <= 0 || !formData.tokenIn || !formData.tokenOut) {
+      return "";
+    }
+    const inputAmount = parseFloat(formData.amountIn);
+    const outputAmount = inputAmount * (1 - POOL_FEE_FRACTION);
+    const decimals = formData.tokenOut.decimals > 6 ? 4 : 2;
+    return outputAmount.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: decimals,
+    });
+  }, [formData.amountIn, formData.tokenIn, formData.tokenOut]);
 
   const balanceIn = useTokenBalance(
     (formData.tokenIn?.address ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
@@ -73,6 +98,20 @@ export function SwapForm() {
     }));
   }
 
+  const handleSwapSuccess = useCallback((txHash: `0x${string}`) => {
+    setSuccessModal({
+      open: true,
+      txHash,
+      amountIn: formData.amountIn,
+      estimatedOut: estimatedOutput,
+    });
+    // Clear the input
+    setFormData((prev) => ({ ...prev, amountIn: "" }));
+    // Refresh balances
+    balanceIn.refetch();
+    balanceOut.refetch();
+  }, [formData.amountIn, estimatedOutput, balanceIn, balanceOut]);
+
   return (
     <div className="w-full max-w-md space-y-3">
       {/* Token In */}
@@ -80,9 +119,12 @@ export function SwapForm() {
         <div className="flex items-center justify-between">
           <label className="text-xs font-medium text-muted">You pay</label>
           {isConnected && formData.tokenIn && (
-            <span className="text-xs text-muted">
+            <button
+              className="text-xs text-muted hover:text-accent"
+              onClick={() => setFormData((prev) => ({ ...prev, amountIn: balanceIn.formatted.replace(/,/g, "") }))}
+            >
               Balance: {balanceIn.formatted} {formData.tokenIn.symbol}
-            </span>
+            </button>
           )}
         </div>
         <div className="mt-2 flex items-center gap-2">
@@ -131,6 +173,7 @@ export function SwapForm() {
             type="text"
             placeholder="0.0"
             disabled
+            value={estimatedOutput}
             className="w-full bg-transparent text-2xl font-medium outline-none placeholder:text-muted"
           />
           <button
@@ -173,6 +216,16 @@ export function SwapForm() {
         )}
       </div>
 
+      {/* Rate info */}
+      {estimatedOutput && (
+        <div className="flex items-center justify-between px-1 text-xs text-muted">
+          <span>Rate</span>
+          <span>
+            1 {formData.tokenIn?.symbol} ≈ {(1 - POOL_FEE_FRACTION).toFixed(4)} {formData.tokenOut?.symbol}
+          </span>
+        </div>
+      )}
+
       {/* Queue warning */}
       {willBeQueued && formData.amountIn && (
         <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/5 p-3">
@@ -197,6 +250,7 @@ export function SwapForm() {
         formData={formData}
         willBeQueued={willBeQueued}
         disabled={!formData.amountIn || Number(formData.amountIn) <= 0}
+        onSwapSuccess={handleSwapSuccess}
       />
 
       {/* Token selector modal */}
@@ -207,6 +261,17 @@ export function SwapForm() {
           exclude={showTokenSelector === "in" ? formData.tokenOut?.address : formData.tokenIn?.address}
         />
       )}
+
+      {/* Swap success modal */}
+      <SwapSuccessModal
+        open={successModal.open}
+        onClose={() => setSuccessModal({ open: false })}
+        txHash={successModal.txHash}
+        tokenInSymbol={formData.tokenIn?.symbol}
+        tokenOutSymbol={formData.tokenOut?.symbol}
+        amountIn={successModal.amountIn}
+        estimatedOut={successModal.estimatedOut}
+      />
     </div>
   );
 }
