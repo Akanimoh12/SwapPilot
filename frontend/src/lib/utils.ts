@@ -21,9 +21,12 @@ export function formatUSD(amount: number): string {
   }).format(amount);
 }
 
-export function formatEther(wei: bigint, decimals = 4): string {
-  const eth = Number(wei) / 1e18;
-  return eth.toFixed(decimals);
+export function formatEther(wei: bigint, displayDecimals = 4, tokenDecimals = 18): string {
+  const value = Number(wei) / 10 ** tokenDecimals;
+  return value.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: displayDecimals,
+  });
 }
 
 export function timeAgo(timestamp: number): string {

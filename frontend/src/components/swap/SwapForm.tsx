@@ -2,11 +2,10 @@
 
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useAccount } from "wagmi";
-import { parseUnits, formatUnits } from "viem";
 import { ArrowDownUp, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TOKENS } from "@/config/tokens";
-import { LARGE_SWAP_THRESHOLD } from "@/lib/constants";
+import { LARGE_SWAP_THRESHOLD_HUMAN } from "@/lib/constants";
 import type { TokenInfo, SwapFormData } from "@/lib/types";
 import { TokenSelector } from "./TokenSelector";
 import { SwapPreview } from "./SwapPreview";
@@ -38,13 +37,7 @@ export function SwapForm() {
 
   const SLIPPAGE_OPTIONS = [10, 50, 100]; // 0.1%, 0.5%, 1%
 
-  // Compute the amount in wei
-  const amountWei =
-    formData.amountIn && formData.tokenIn
-      ? parseUnits(formData.amountIn, formData.tokenIn.decimals)
-      : 0n;
-
-  const willBeQueued = amountWei >= LARGE_SWAP_THRESHOLD;
+  const willBeQueued = formData.amountIn ? parseFloat(formData.amountIn) >= LARGE_SWAP_THRESHOLD_HUMAN : false;
 
   // Estimate output: for the mUSDC/mDAI 1:1 pool, output ≈ input × (1 - fee)
   // adjusted for decimal differences between tokens

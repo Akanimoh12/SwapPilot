@@ -1,5 +1,6 @@
 // App-wide constants
 export const LARGE_SWAP_THRESHOLD = 10n * 10n ** 18n; // 10 tokens (18-decimal base)
+export const LARGE_SWAP_THRESHOLD_HUMAN = 10; // 10 tokens — used for decimal-agnostic UI comparison
 export const MAX_QUEUE_TIME = 5 * 60; // 5 minutes in seconds (matches Constants.sol)
 export const AI_EXECUTE_THRESHOLD = 70; // score >= 70 = execute
 export const AI_WAIT_THRESHOLD = 40; // score < 40 = expire
